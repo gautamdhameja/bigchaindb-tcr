@@ -1,10 +1,20 @@
 import * as driver from 'bigchaindb-driver'
+import bip39 from 'bip39'
 import env from '../env'
 
 const API_PATH = env.bdb.apiPath
 const conn = new driver.Connection(API_PATH)
 
-async function createNewAsset(keypair, asset, metadata) {
+export function createNewPassphrase() {
+    return bip39.generateMnemonic()
+}
+
+function getKeypairFromPassphrase(passphrase) {
+    return new driver.Ed25519Keypair(bip39.mnemonicToSeed(passphrase).slice(0, 32))
+}
+
+export async function createNewAsset(passphrase, asset, metadata) {
+    const keypair = getKeypairFromPassphrase(passphrase)
     let condition = driver.Transaction.makeEd25519Condition(keypair.publicKey, true)
     let output = driver.Transaction.makeOutput(condition)
     output.public_keys = [keypair.publicKey]
@@ -20,7 +30,8 @@ async function createNewAsset(keypair, asset, metadata) {
     return await conn.postTransactionCommit(txSigned)
 }
 
-async function transferAsset(tx, keypair, toPublicKey, metadata, amount = 0) {
+export async function transferAsset(tx, passphrase, toPublicKey, metadata, amount = 0) {
+    const keypair = getKeypairFromPassphrase(passphrase)
     let condition = driver.Transaction.makeEd25519Condition(toPublicKey)
     let output = driver.Transaction.makeOutput(condition)
     output.public_keys = [toPublicKey]
@@ -35,5 +46,3 @@ async function transferAsset(tx, keypair, toPublicKey, metadata, amount = 0) {
     const txSigned = driver.Transaction.signTransaction(txTransfer, keypair.privateKey)
     return await conn.postTransactionCommit(txSigned)
 }
-
-export { createNewAsset, transferAsset }

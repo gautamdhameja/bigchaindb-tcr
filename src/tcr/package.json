@@ -19,6 +19,7 @@
  "dependencies": {
   "babel-runtime": "^6.26.0",
   "bigchaindb-driver": "^4.1.0",
+  "bip39": "^2.5.0",
   "fs-jetpack": "^2.1.0"
  },
  "ava": {
