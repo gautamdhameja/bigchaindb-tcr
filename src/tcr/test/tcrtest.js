@@ -5,20 +5,26 @@ import * as token from '../lib/token';
 
 require('dotenv').config();
 
-test('should-init', async t => {
+async function initTcr(passphrase) {
     const namespace = "testtcr";
     const tokenSymbol = "TST";
-    const tcr = await bootstrap.init(namespace, tokenSymbol);
+    return await bootstrap.init(passphrase, namespace, tokenSymbol);
+}
+
+test('should-init', async t => {
+    const passphrase = bdb.createNewPassphrase();
+    const tcr = await initTcr(passphrase);
     console.log(JSON.stringify(tcr));
-    t.is(tcr.tcrTx.asset.data.namespace, namespace);
+    t.is(tcr.asset.data.namespace, "testtcr");
 });
 
 test('should-transfer-tokens', async t => {
-    const tcrPassphrase = process.env.TCR_ADMIN_PASSPHRASE.toString();
+    const tcrPassphrase = bdb.createNewPassphrase();
     const toPassphrase = bdb.createNewPassphrase();
     const toPublicKey = bdb.getKeypairFromPassphrase(toPassphrase).publicKey;
+    const tcr = await initTcr(tcrPassphrase);
     const amount = 1000;
-    const trTx = await token.transfer(tcrPassphrase, toPublicKey, process.env.TOKEN_ASSET_ID.toString(), amount);
+    const trTx = await token.transfer(tcrPassphrase, toPublicKey, tcr.asset.data.tokenAsset, amount);
     console.log(JSON.stringify(trTx));
     t.not(trTx.id, undefined);
     t.is(trTx.outputs[0].amount, amount.toString())
@@ -26,13 +32,14 @@ test('should-transfer-tokens', async t => {
 });
 
 test('should-fail-transfer-low-balance', async t => {
-    const tcrPassphrase = process.env.TCR_ADMIN_PASSPHRASE.toString();
+    const tcrPassphrase = bdb.createNewPassphrase();
     const toPassphrase = bdb.createNewPassphrase();
     const toPublicKey = bdb.getKeypairFromPassphrase(toPassphrase).publicKey;
+    const tcr = await initTcr(tcrPassphrase);
     const amount = 21000001; //more than the default total supply of tokens
     try{
-        await token.transfer(
-            tcrPassphrase, toPublicKey, process.env.TOKEN_ASSET_ID.toString(), amount);
+        await token.transfer(tcrPassphrase, 
+            toPublicKey, tcr.asset.data.tokenAsset, amount);
     }
     catch(err){
         console.log(err.message);

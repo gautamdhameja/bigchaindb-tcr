@@ -1,9 +1,7 @@
 import * as bdb from '../bdb/bdb';
 
-// creates two BigchainDB assets representing the TCR and its token
-// the asset id goes into the configuration of the client dApp
-export async function init(namespace, tokenSymbol) {
-    const passphrase = bdb.createNewPassphrase()
+// creates three BigchainDB assets representing the TCR, its token and config
+export async function init(passphrase, namespace, tokenSymbol) {
     const tokenAsset = {
         namespace: namespace.toString(),
         symbol: tokenSymbol.toString().toUpperCase()
@@ -14,11 +12,20 @@ export async function init(namespace, tokenSymbol) {
 
     const tokenTx = await bdb.createToken(passphrase, tokenAsset, metadata)
 
-    const tcrAsset = {
-        namespace: namespace.toString(),
-        tokenAsset: tokenTx.id
+    const configAsset = {
+        minDeposit: 100,
+        minDepositVote: 10,
+        applyStageLen: 5,
+        commitStageLen: 5
     }
 
-    const tcrTx = await bdb.createNewAsset(passphrase, tcrAsset, metadata)
-    return { passphrase, tcrTx }
+    const configTx = await bdb.createNewAsset(passphrase, configAsset, metadata)
+
+    const tcrAsset = {
+        namespace: namespace.toString(),
+        tokenAsset: tokenTx.id,
+        configAsset: configTx.id
+    }
+
+    return await bdb.createNewAsset(passphrase, tcrAsset, metadata)
 }
