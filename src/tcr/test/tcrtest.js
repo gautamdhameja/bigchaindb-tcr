@@ -15,7 +15,6 @@ async function initTcr(passphrase) {
 test('should-init', async t => {
     const passphrase = bdb.createNewPassphrase();
     const tcr = await initTcr(passphrase);
-    console.log(JSON.stringify(tcr));
     t.is(tcr.asset.data.namespace, "testtcr");
 });
 
@@ -26,7 +25,6 @@ test('should-transfer-tokens', async t => {
     const tcr = await initTcr(tcrPassphrase);
     const amount = 1000;
     const trTx = await token.transfer(tcrPassphrase, toPublicKey, tcr.asset.data.tokenAsset, amount);
-    console.log(JSON.stringify(trTx));
     t.not(trTx.id, undefined);
     t.is(trTx.outputs[0].amount, amount.toString())
     t.is(trTx.outputs[0].public_keys[0], toPublicKey)
@@ -43,7 +41,6 @@ test('should-fail-transfer-low-balance', async t => {
             toPublicKey, tcr.asset.data.tokenAsset, amount);
     }
     catch(err){
-        console.log(err.message);
         t.is(err.message, 'Transfer failed. Not enough token balance!');
     }
 });
@@ -53,7 +50,8 @@ test('should-get-config', async t => {
         minDeposit: 100,
         minDepositVote: 10,
         applyStageLen: 5,
-        commitStageLen: 5
+        commitStageLen: 5,
+        type: 'TcrConfig'
     }
     const tcrPassphrase = bdb.createNewPassphrase();
     const tcr = await initTcr(tcrPassphrase);

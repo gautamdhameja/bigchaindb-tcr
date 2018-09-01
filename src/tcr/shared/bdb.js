@@ -25,6 +25,10 @@ export async function getOutputs(publicKey, spent = false) {
     return await conn.listOutputs(publicKey, spent)
 }
 
+export async function searchAssets(text) {
+    return await conn.searchAssets(text)
+}
+
 // the maxAmount is defaulted to 21M (just because Satoshi decided there will be a max of 21M BTC only)
 export async function createToken(passphrase, asset, metadata, amount = 21000000) {
     const keypair = getKeypairFromPassphrase(passphrase)
