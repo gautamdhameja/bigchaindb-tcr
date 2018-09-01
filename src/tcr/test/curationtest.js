@@ -24,7 +24,7 @@ test('should-curate', async t => {
     process.env.TCR_ASSET_ID = tcr.id;
     process.env.TOKEN_ASSET_ID = tcr.asset.data.tokenAsset;
 
-    // transfer some tokens to new user
+    // transfer some tokens to a couple of new users
     const passphrase1 = bdb.createNewPassphrase();
     const passphrase2 = bdb.createNewPassphrase();
     const toPublicKey1 = bdb.getKeypairFromPassphrase(passphrase1).publicKey;
@@ -40,29 +40,50 @@ test('should-curate', async t => {
     t.is(trTx2.outputs[0].amount, amount.toString());
     t.is(trTx2.outputs[0].public_keys[0], toPublicKey2);
 
-    // test proposal
-    const proposal = await curation.propose(passphrase1, { name: "testProposal" }, 100);
+    // bad proposal stake should fail, less than 100 - user 1
+    try {
+        await curation.propose(passphrase1, { name: "testProposal" }, 50);
+    } catch (err) {
+        t.is(err.message, "Proposal stake is less than TCR minimum deposit.", "Challenge stake check failed.");
+    }
+
+    // test proposal - user 1
+    const proposal = await curation.propose(passphrase1, { name: "testProposal" }, 1000);
     t.is(proposal.asset.data.type, constants.assetTypes.proposal, "Proposal not created");
 
-    // test challenge
+    // bad challenge stake should fail, less than 1000 - user 2
+    try {
+        await curation.challenge(passphrase2, proposal.id, 999);
+    } catch (err) {
+        t.is(err.message, "Challenge stake is less than proposal stake.", "Challenge stake check failed.");
+    }
+
+    // test challenge - user 2
     const challenge = await curation.challenge(passphrase2, proposal.id, 1000);
     t.is(challenge.asset.data.type, constants.assetTypes.challenge, "Challenge not created");
 
-    // test vote
+    // test vote - user 1
     const vote = await curation.vote(passphrase1, proposal.id, 1, 10);
     t.is(vote.asset.data.type, constants.assetTypes.vote, "Vote not created");
 
-    // duplicate challenge should fail
+    // duplicate challenge should fail - user 2
     try {
         await curation.challenge(passphrase2, proposal.id, 1000);
     } catch (err) {
         t.is(err.message, "This proposal is already challenged.", "Challenge duplication check failed.");
     }
 
-    // bad vote value should fail
+    // bad vote value should fail, other than 0 or 1 - user 1
     try {
         await curation.vote(passphrase1, proposal.id, 5, 10);
     } catch (err) {
         t.is(err.message, "Vote can either be 0 or 1.", "Vote value check failed.");
+    }
+
+    // bad vote stake should fail, less than 10 - user 2
+    try {
+        await curation.vote(passphrase2, proposal.id, 0, 1);
+    } catch (err) {
+        t.is(err.message, "Vote stake is less than TCR minimum vote deposit.", "Vote stake check failed.");
     }
 });
