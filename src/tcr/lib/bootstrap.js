@@ -1,4 +1,4 @@
-import * as bdb from '../bdb/bdb';
+import * as bdb from '../shared/bdb';
 
 // creates three BigchainDB assets representing the TCR, its token and config
 export async function init(passphrase, namespace, tokenSymbol) {

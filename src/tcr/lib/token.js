@@ -1,4 +1,4 @@
-import * as bdb from '../bdb/bdb'
+import * as bdb from '../shared/bdb'
 
 // transfers an specified amount of tokens to a public key
 export async function transfer(passphrase, toPublicKey, tokenId, amount) {

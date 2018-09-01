@@ -1,4 +1,4 @@
-import * as bdb from '../bdb/bdb';
+import * as bdb from '../shared/bdb';
 
 export async function propose(passphrase, proposal, stakeAmount) {
     

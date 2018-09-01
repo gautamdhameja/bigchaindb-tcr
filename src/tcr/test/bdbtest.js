@@ -1,5 +1,5 @@
 import test from 'ava';
-import * as bdb from '../bdb/bdb';
+import * as bdb from '../shared/bdb';
 
 test('should-create-asset', async t => {
     const user1 = bdb.createNewPassphrase();

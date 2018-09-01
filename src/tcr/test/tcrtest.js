@@ -1,7 +1,8 @@
 import test from 'ava';
-import * as bdb from '../bdb/bdb';
+import * as bdb from '../shared/bdb';
 import * as bootstrap from '../lib/bootstrap';
 import * as token from '../lib/token';
+import * as config from '../lib/config';
 
 require('dotenv').config();
 
@@ -45,4 +46,17 @@ test('should-fail-transfer-low-balance', async t => {
         console.log(err.message);
         t.is(err.message, 'Transfer failed. Not enough token balance!');
     }
+});
+
+test('should-get-config', async t => {
+    const configAsset = {
+        minDeposit: 100,
+        minDepositVote: 10,
+        applyStageLen: 5,
+        commitStageLen: 5
+    }
+    const tcrPassphrase = bdb.createNewPassphrase();
+    const tcr = await initTcr(tcrPassphrase);
+    const configTx = await config.get(tcr.id);
+    t.deepEqual(configTx, configAsset, 'Config get failed');
 });
