@@ -12,7 +12,8 @@ import * as config from './config'
 
 // creates a new asset of the type proposal
 export async function propose(passphrase, proposal, stakeAmount) {
-    const configValues = await config.get(process.env.TCR_ASSET_ID)
+    const tcrAsset = process.env.TCR_ASSET_ID
+    const configValues = await config.get(tcrAsset)
     if (configValues.minDeposit > stakeAmount) {
         throw new Error("Proposal stake is less than TCR minimum deposit.")
     }
@@ -24,14 +25,16 @@ export async function propose(passphrase, proposal, stakeAmount) {
 
     // step 2: create proposal asset
     const proposalAsset = {
-        stakeTx: trTx.id,
         type: constants.assetTypes.proposal,
+        tcr: tcrAsset,
+        stakeTx: trTx.id,
         stakeAmount,
-        proposalData: proposal
+        proposalData: proposal,
+        timestamp: Date.now()
     }
 
     const metadata = {
-        timestamp: new Date()
+        date: new Date()
     }
 
     return await bdb.createNewAsset(passphrase, proposalAsset, metadata)
@@ -63,11 +66,12 @@ export async function challenge(passphrase, proposalId, stakeAmount) {
             stakeTx: trTx.id,
             type: constants.assetTypes.challenge,
             proposal: proposalId,
-            stakeAmount
+            stakeAmount,
+            timestamp: Date.now()
         }
 
         const metadata = {
-            timestamp: new Date()
+            date: new Date()
         }
 
         return await bdb.createNewAsset(passphrase, challengeAsset, metadata)
@@ -105,11 +109,12 @@ export async function vote(passphrase, proposalId, vote, stakeAmount) {
                 type: constants.assetTypes.vote,
                 proposal: proposalId,
                 stakeAmount,
-                voteValue: vote
+                voteValue: vote,
+                timestamp: Date.now()
             }
 
             const metadata = {
-                timestamp: new Date()
+                date: new Date()
             }
 
             return await bdb.createNewAsset(passphrase, voteAsset, metadata)

@@ -55,6 +55,7 @@ test('should-get-config', async t => {
     }
     const tcrPassphrase = bdb.createNewPassphrase();
     const tcr = await initTcr(tcrPassphrase);
+    configAsset.timestamp = tcr.asset.data.timestamp;
     const configTx = await config.get(tcr.id);
     t.deepEqual(configTx, configAsset, 'Config get failed');
 });
