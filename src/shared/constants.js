@@ -4,5 +4,6 @@ export const assetTypes = {
     vote: "TcrVote",
     token: "TcrToken",
     config: "TcrConfig",
-    tcr: "TcrList"
+    tcr: "TcrList",
+    completion: "TcrProposalCompletion"
 }

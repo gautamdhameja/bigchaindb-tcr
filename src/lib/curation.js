@@ -24,6 +24,7 @@ export async function propose(passphrase, proposal, stakeAmount) {
 
     // step 2: create proposal asset
     const proposalAsset = {
+        createdBy: bdb.getKeypairFromPassphrase(passphrase).publicKey,
         type: constants.assetTypes.proposal,
         tcr: process.env.TCR_ASSET_ID,
         stakeTx: trTx.id,
@@ -69,6 +70,7 @@ export async function challenge(passphrase, proposalId, stakeAmount) {
 
         // step 3: create challenge asset
         const challengeAsset = {
+            createdBy: bdb.getKeypairFromPassphrase(passphrase).publicKey,
             stakeTx: trTx.id,
             type: constants.assetTypes.challenge,
             proposal: proposalId,
@@ -119,6 +121,7 @@ export async function vote(passphrase, proposalId, vote, stakeAmount) {
 
             // step 5: create vote asset
             const voteAsset = {
+                createdBy: bdb.getKeypairFromPassphrase(passphrase).publicKey,
                 stakeTx: trTx.id,
                 type: constants.assetTypes.vote,
                 proposal: proposalId,
