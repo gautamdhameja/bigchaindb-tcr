@@ -12,8 +12,7 @@ import * as config from './config'
 
 // creates a new asset of the type proposal
 export async function propose(passphrase, proposal, stakeAmount) {
-    const tcrAsset = process.env.TCR_ASSET_ID
-    const configValues = await config.get(tcrAsset)
+    const configValues = await config.get(process.env.TCR_ASSET_ID)
     if (configValues.minDeposit > stakeAmount) {
         throw new Error("Proposal stake is less than TCR minimum deposit.")
     }
@@ -26,7 +25,7 @@ export async function propose(passphrase, proposal, stakeAmount) {
     // step 2: create proposal asset
     const proposalAsset = {
         type: constants.assetTypes.proposal,
-        tcr: tcrAsset,
+        tcr: process.env.TCR_ASSET_ID,
         stakeTx: trTx.id,
         stakeAmount,
         proposalData: proposal,
@@ -56,7 +55,7 @@ export async function challenge(passphrase, proposalId, stakeAmount) {
             throw new Error("This proposal is already challenged.")
         }
 
-        const configValues = await config.get(tcrAsset)
+        const configValues = await config.get(process.env.TCR_ASSET_ID)
         const deadline = proposalTx.asset.data.timestamp +
             1000 * 60 * 60 * 24 * configValues.applyStageLen
         if (Date.now() >= deadline) {
@@ -87,7 +86,7 @@ export async function challenge(passphrase, proposalId, stakeAmount) {
     }
 }
 
-// created a vote asset
+// create a vote asset
 // vote can either be 0 or 1
 // TODO: blind voting
 export async function vote(passphrase, proposalId, vote, stakeAmount) {
