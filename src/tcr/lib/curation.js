@@ -51,9 +51,16 @@ export async function challenge(passphrase, proposalId, stakeAmount) {
             throw new Error("Challenge stake is less than proposal stake.")
         }
 
-        // check if challenge already exists
+        // check if challenge already exists or challenge time has passed
         if (await getChallengeForProposal(proposalId)) {
             throw new Error("This proposal is already challenged.")
+        }
+
+        const configValues = await config.get(tcrAsset)
+        const deadline = proposalTx.asset.data.timestamp +
+            1000 * 60 * 60 * 24 * configValues.applyStageLen
+        if (Date.now() >= deadline) {
+            throw new Error("Challenge period has passed.")
         }
 
         //step 2: transfer stake
@@ -92,18 +99,26 @@ export async function vote(passphrase, proposalId, vote, stakeAmount) {
     // step 1: verify proposal and challenge
     const proposalTx = await bdb.getTransaction(proposalId)
     if (proposalTx && proposalTx.asset.data.type === constants.assetTypes.proposal) {
-        // step 2: check if challenge already exists
-        if (!await getChallengeForProposal(proposalId)) {
+        // step 2: check if challenge exists
+        const challenge = await getChallengeForProposal(proposalId)
+        if (!challenge) {
             throw new Error("This proposal is not challenged.")
         }
 
+        // step 3: check if deadline has passed
+        const deadline = challenge.data.timestamp +
+            1000 * 60 * 60 * 24 * configValues.commitStageLen
+        if (Date.now() >= deadline) {
+            throw new Error("Voting period has passed.")
+        }
+
         if (vote === 1 || vote === 0) {
-            //step 3: transfer stake
+            //step 4: transfer stake
             const trTx = await token.transfer(
                 passphrase, process.env.TCR_PUBLIC_KEY,
                 process.env.TOKEN_ASSET_ID, stakeAmount)
 
-            // step 4: create vote asset
+            // step 5: create vote asset
             const voteAsset = {
                 stakeTx: trTx.id,
                 type: constants.assetTypes.vote,
@@ -131,7 +146,7 @@ export async function getChallengeForProposal(proposalId) {
     if (challenges && challenges.length > 0) {
         for (const challenge of challenges) {
             if (challenge.data.proposal === proposalId) {
-                return challenge.id
+                return challenge
             }
         }
     }
