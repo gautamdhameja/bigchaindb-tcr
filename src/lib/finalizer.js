@@ -34,6 +34,7 @@ async function completeProposalWithoutChallenge(passphrase, proposalTx) {
         1000 * 60 * 60 * 24 * configValues.applyStageLen
     if (Date.now() >= deadline) {
         const completionAsset = {
+            type: constants.assetTypes.completion,
             proposal: proposalTx.id,
             lockedStake: proposalTx.asset.data.stakeAmount,
             tcr: process.env.TCR_ASSET_ID,
@@ -58,6 +59,7 @@ async function completeProposalWithChallenge(passphrase, proposalTx, challenge) 
     if (Date.now() >= deadline) {
         if (await doStakeDistribution(passphrase, proposalTx, challenge)) {
             const completionAsset = {
+                type: constants.assetTypes.completion,
                 proposal: proposalTx.id,
                 challenge: challenge.id,
                 lockedStake: proposalTx.asset.data.stakeAmount,
@@ -71,7 +73,7 @@ async function completeProposalWithChallenge(passphrase, proposalTx, challenge) 
 
             return await bdb.createNewAsset(passphrase, completionAsset, metadata)
         } else {
-            return "Proposal completed with rejection"
+            return "Proposal completed with rejection."
         }
     } else {
         throw new Error("Cannot complete as applyStageLen is not reached.")
@@ -124,12 +126,13 @@ async function doStakeDistribution(passphrase, proposal, challenge) {
         // proposal rejected
         for (let e of againstVoteOutputs) {
             const winAmount = Math.floor((proposalStake / againstVoteStake) * e.votingStake) + e.votingStake
+            // give the challenge amount back to the challenger
+            if (e.publicKey === challenge.data.createdBy) {
+                winAmount += challenge.data.stakeAmount
+            }
             await token.transfer(passphrase, e.publicKey, process.env.TOKEN_ASSET_ID, winAmount)
         }
 
-        // give the challenge amount back to the challenger
-        await token.transfer(passphrase, challenge.data.createdBy,
-            process.env.TOKEN_ASSET_ID, challenge.data.stakeAmount)
         return false
     }
 }
@@ -140,7 +143,7 @@ async function getVotesForProposal(proposalId) {
     const votes = await bdb.searchAssets(constants.assetTypes.vote)
     if (votes && votes.length > 0) {
         for (const vote of votes) {
-            if (votes.data.proposal === proposalId) {
+            if (vote.data.proposal === proposalId) {
                 allVotes.push(vote)
             }
         }

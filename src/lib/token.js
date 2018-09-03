@@ -65,3 +65,37 @@ export async function transfer(passphrase, toPublicKey, tokenId, amount) {
 
     throw new Error('Token transfer failed.')
 }
+
+export async function getBalance(publicKey, tokenId) {
+    const unspents = await bdb.getOutputs(publicKey, false)
+    let cummulativeAmount = 0
+    let ownsTokens = false
+    if (unspents && unspents.length > 0) {
+        for (const unspent of unspents) {
+            const tx = await bdb.getTransaction(unspent.transaction_id)
+            let assetId
+            if (tx.operation === 'CREATE') {
+                assetId = tx.id
+            }
+
+            if (tx.operation === 'TRANSFER') {
+                assetId = tx.asset.id
+            }
+
+            if (assetId === tokenId) {
+                ownsTokens = true
+                const txAmount = parseInt(tx.outputs[unspent.output_index].amount)
+                cummulativeAmount += txAmount
+            }
+        }
+
+        if (ownsTokens) {
+            return {
+                token: tokenId,
+                amount: cummulativeAmount
+            }
+        } else {
+            throw new Error('Token not found in user wallet')
+        }
+    }
+}
