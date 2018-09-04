@@ -143,6 +143,7 @@ export async function vote(passphrase, proposalId, vote, stakeAmount) {
     }
 }
 
+// gets the challenges for a proposal
 export async function getChallengeForProposal(proposalId) {
     const challenges = await bdb.searchAssets(constants.assetTypes.challenge)
     if (challenges && challenges.length > 0) {

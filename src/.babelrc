@@ -3,6 +3,7 @@
         "env"
     ],
     "plugins": [
-        "transform-runtime"
+        "transform-runtime",
+        "transform-object-rest-spread"
     ]
 }

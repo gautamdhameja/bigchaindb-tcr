@@ -66,6 +66,7 @@ export async function transfer(passphrase, toPublicKey, tokenId, amount) {
     throw new Error('Token transfer failed.')
 }
 
+// gets the token balance for a particular token (asset)
 export async function getBalance(publicKey, tokenId) {
     const unspents = await bdb.getOutputs(publicKey, false)
     let cummulativeAmount = 0

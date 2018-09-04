@@ -1,18 +1,12 @@
 import test from 'ava';
 import * as bdb from '../shared/bdb';
-import * as bootstrap from '../lib/bootstrap';
+import * as helper from './_helper';
 import * as token from '../lib/token';
 import * as curation from '../lib/curation';
 import * as constants from '../shared/constants'
 import * as finalizer from '../lib/finalizer'
 
 require('dotenv').config();
-
-async function initTcr(passphrase) {
-    const namespace = "testtcr";
-    const tokenSymbol = "TST";
-    return await bootstrap.init(passphrase, namespace, tokenSymbol);
-}
 
 async function sleep(milliseconds) {
     return new Promise(resolve => setTimeout(resolve, milliseconds));
@@ -21,7 +15,7 @@ async function sleep(milliseconds) {
 test.serial('should-curate', async t => {
     // init a new TCR
     const passphrase = bdb.createNewPassphrase();
-    const tcr = await initTcr(passphrase);
+    const tcr = await helper.initTcr(passphrase);
     t.is(tcr.asset.data.namespace, "testtcr");
 
     // set env variables for new TCR
@@ -96,7 +90,7 @@ test.serial('should-curate', async t => {
 test.serial('should-finalize-with-challenge-accept', async t => {
     // init a new TCR
     const passphrase = bdb.createNewPassphrase();
-    const tcr = await initTcr(passphrase);
+    const tcr = await helper.initTcr(passphrase);
     t.is(tcr.asset.data.namespace, "testtcr");
 
     // set env variables for new TCR
@@ -147,7 +141,7 @@ test.serial('should-finalize-with-challenge-accept', async t => {
 test.serial('should-finalize-with-challenge-reject', async t => {
     // init a new TCR
     const passphrase = bdb.createNewPassphrase();
-    const tcr = await initTcr(passphrase);
+    const tcr = await helper.initTcr(passphrase);
     t.is(tcr.asset.data.namespace, "testtcr");
 
     // set env variables for new TCR
@@ -198,7 +192,7 @@ test.serial('should-finalize-with-challenge-reject', async t => {
 test.serial('should-finalize-without-challenge', async t => {
     // init a new TCR
     const passphrase = bdb.createNewPassphrase();
-    const tcr = await initTcr(passphrase);
+    const tcr = await helper.initTcr(passphrase);
     t.is(tcr.asset.data.namespace, "testtcr");
 
     // set env variables for new TCR

@@ -1,8 +1,15 @@
 import * as bdb from '../shared/bdb';
 import * as constants from '../shared/constants'
 
+// const config = {
+//     minDeposit: 100,
+//     minDepositVote: 10,
+//     applyStageLen: 5,
+//     commitStageLen: 5
+// }
+
 // creates three BigchainDB assets representing the TCR, its token and config
-export async function init(passphrase, namespace, tokenSymbol) {
+export async function init(passphrase, namespace, tokenSymbol, config) {
     const timestamp = Date.now()
 
     const tokenAsset = {
@@ -19,10 +26,7 @@ export async function init(passphrase, namespace, tokenSymbol) {
     const tokenTx = await bdb.createToken(passphrase, tokenAsset, metadata)
 
     const configAsset = {
-        minDeposit: 100,
-        minDepositVote: 10,
-        applyStageLen: 5,
-        commitStageLen: 5,
+        ...config,
         type: constants.assetTypes.config,
         timestamp
     }

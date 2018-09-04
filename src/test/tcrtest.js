@@ -1,20 +1,14 @@
 import test from 'ava';
 import * as bdb from '../shared/bdb';
-import * as bootstrap from '../lib/bootstrap';
+import * as helper from './_helper';
 import * as token from '../lib/token';
 import * as config from '../lib/config';
 
 require('dotenv').config();
 
-async function initTcr(passphrase) {
-    const namespace = "testtcr";
-    const tokenSymbol = "TST";
-    return await bootstrap.init(passphrase, namespace, tokenSymbol);
-}
-
 test('should-init', async t => {
     const passphrase = bdb.createNewPassphrase();
-    const tcr = await initTcr(passphrase);
+    const tcr = await helper.initTcr(passphrase);
     t.is(tcr.asset.data.namespace, "testtcr");
 });
 
@@ -22,7 +16,7 @@ test('should-transfer-tokens', async t => {
     const tcrPassphrase = bdb.createNewPassphrase();
     const toPassphrase = bdb.createNewPassphrase();
     const toPublicKey = bdb.getKeypairFromPassphrase(toPassphrase).publicKey;
-    const tcr = await initTcr(tcrPassphrase);
+    const tcr = await helper.initTcr(tcrPassphrase);
     const amount = 1000;
     const trTx = await token.transfer(tcrPassphrase, toPublicKey, tcr.asset.data.tokenAsset, amount);
     t.not(trTx.id, undefined);
@@ -34,7 +28,7 @@ test('should-fail-transfer-low-balance', async t => {
     const tcrPassphrase = bdb.createNewPassphrase();
     const toPassphrase = bdb.createNewPassphrase();
     const toPublicKey = bdb.getKeypairFromPassphrase(toPassphrase).publicKey;
-    const tcr = await initTcr(tcrPassphrase);
+    const tcr = await helper.initTcr(tcrPassphrase);
     const amount = 21000001; //more than the default total supply of tokens
     try{
         await token.transfer(tcrPassphrase, 
@@ -46,16 +40,8 @@ test('should-fail-transfer-low-balance', async t => {
 });
 
 test('should-get-config', async t => {
-    const configAsset = {
-        minDeposit: 100,
-        minDepositVote: 10,
-        applyStageLen: 5,
-        commitStageLen: 5,
-        type: 'TcrConfig'
-    }
     const tcrPassphrase = bdb.createNewPassphrase();
-    const tcr = await initTcr(tcrPassphrase);
-    configAsset.timestamp = tcr.asset.data.timestamp;
+    const tcr = await helper.initTcr(tcrPassphrase);
     const configTx = await config.get(tcr.id);
-    t.deepEqual(configTx, configAsset, 'Config get failed');
+    t.deepEqual(configTx.type, 'TcrConfig', 'Config get failed');
 });

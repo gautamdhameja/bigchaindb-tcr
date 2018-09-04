@@ -1,3 +1,4 @@
+// string constants
 export const assetTypes = {
     proposal: "TcrProposal",
     challenge: "TcrChallenge",
