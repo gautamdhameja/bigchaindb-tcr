@@ -1,3 +1,3 @@
-# TCR BDB
+# BigchainDB - TCR
 
-A simple Token Curated Registry implementation based on BigchainDB.
+A simple Token Curated Registries implementation based on BigchainDB and JavaScript.
